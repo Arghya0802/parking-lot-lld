@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Parking Lot low-level design and concurrency learning guide with Java examples.">
+  <title>Parking Lot LLD &amp; Concurrency</title>
+  <style>
+    :root{color-scheme:dark;--bg:#08101f;--panel:#101b2f;--panel2:#172640;--text:#edf4ff;--muted:#a4b5ce;--line:#2c4164;--mint:#58dbc2;--blue:#7ea6ff;--amber:#ffd071;--red:#ff8292;--shadow:0 18px 50px #0005}
+    html[data-theme="light"]{color-scheme:light;--bg:#f4f7fb;--panel:#fff;--panel2:#edf3fa;--text:#15233c;--muted:#52647f;--line:#cedbec;--mint:#087d6b;--blue:#315fc7;--amber:#996200;--red:#b93448;--shadow:0 16px 45px #2342}
+    *{box-sizing:border-box}html{scroll-behavior:smooth;scroll-padding-top:75px}body{margin:0;background:radial-gradient(circle at 15% -10%,color-mix(in srgb,var(--blue) 18%,transparent),transparent 34rem),var(--bg);color:var(--text);font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;line-height:1.65}a{color:var(--mint);text-underline-offset:3px}code,pre{font-family:"SFMono-Regular",Consolas,monospace}.top{position:sticky;top:0;z-index:10;border-bottom:1px solid var(--line);background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(14px)}.topin,.hero,.layout,footer{width:min(1160px,calc(100% - 32px));margin-inline:auto}.topin{min-height:62px;display:flex;align-items:center;justify-content:space-between;gap:12px}.brand{font-weight:850}.actions{display:flex;gap:8px}.btn{border:1px solid var(--line);border-radius:9px;padding:7px 11px;background:var(--panel);color:var(--text);cursor:pointer;text-decoration:none}.btn:hover{border-color:var(--mint)}.hero{margin-top:50px;padding:40px;border:1px solid var(--line);border-radius:23px;background:linear-gradient(145deg,color-mix(in srgb,var(--panel) 94%,var(--blue)),var(--panel));box-shadow:var(--shadow)}.eyebrow,.num{color:var(--mint);font-size:.78rem;font-weight:850;letter-spacing:.09em;text-transform:uppercase}h1{max-width:850px;margin:10px 0;font-size:clamp(2.25rem,7vw,4.7rem);line-height:1.02;letter-spacing:-.055em}.hero p{max-width:780px;color:var(--muted);font-size:1.12rem}.stats,.cards,.mechanisms,.sessions{display:grid;gap:12px}.stats{grid-template-columns:repeat(4,1fr);margin-top:26px}.stat,.card{padding:15px;border:1px solid var(--line);border-radius:12px;background:var(--panel2)}.stat strong,.card strong{display:block}.stat span,.card p{color:var(--muted);font-size:.9rem}.layout{display:grid;grid-template-columns:245px minmax(0,1fr);gap:28px;margin-top:30px;margin-bottom:70px;align-items:start}.nav{position:sticky;top:83px;max-height:calc(100vh - 100px);overflow:auto;padding:14px;border:1px solid var(--line);border-radius:14px;background:var(--panel)}.nav a{display:block;padding:6px 8px;border-radius:7px;color:var(--muted);font-size:.88rem;text-decoration:none}.nav a:hover,.nav a.active{color:var(--text);background:var(--panel2)}main{min-width:0}section{margin-bottom:22px;padding:28px;border:1px solid var(--line);border-radius:15px;background:var(--panel);box-shadow:0 8px 25px #0002}h2{margin:3px 0 8px;font-size:clamp(1.45rem,4vw,2rem);letter-spacing:-.025em}h3{margin:22px 0 7px;color:var(--blue)}p{margin:8px 0 13px}li+li{margin-top:5px}.cards{grid-template-columns:repeat(2,1fr)}.mechanisms{grid-template-columns:repeat(3,1fr)}.card h3{margin:0 0 6px;color:var(--text)}.card.good{border-top:3px solid var(--mint)}.card.warn{border-top:3px solid var(--amber)}.card.bad{border-top:3px solid var(--red)}.callout{margin:17px 0;padding:14px 16px;border-left:4px solid var(--mint);border-radius:0 10px 10px 0;background:color-mix(in srgb,var(--mint) 9%,var(--panel2))}.callout.warn{border-color:var(--amber);background:color-mix(in srgb,var(--amber) 9%,var(--panel2))}.callout.bad{border-color:var(--red);background:color-mix(in srgb,var(--red) 9%,var(--panel2))}.callout strong{display:block}.table{overflow-x:auto;margin:15px 0}table{width:100%;border-collapse:collapse;font-size:.9rem}th,td{padding:10px 11px;border:1px solid var(--line);text-align:left;vertical-align:top}th{background:var(--panel2)}td{color:var(--muted)}.code{position:relative;margin:15px 0}pre{margin:0;padding:19px;border:1px solid var(--line);border-radius:12px;overflow:auto;background:#07101d;color:#dce9ff;font-size:.83rem;line-height:1.58}code:not(pre code){padding:.12em .35em;border:1px solid var(--line);border-radius:5px;background:var(--panel2);color:var(--mint)}.copy{position:absolute;right:8px;top:8px;border:1px solid #3d5678;border-radius:7px;padding:4px 8px;background:#14243c;color:#e6f0ff;cursor:pointer}.race{display:grid;grid-template-columns:1fr auto 1fr;gap:11px;align-items:center}.thread{padding:14px;border:1px solid var(--line);border-radius:11px;background:var(--panel2)}.thread div{margin:6px 0;padding:7px;border-radius:7px;background:color-mix(in srgb,var(--panel) 80%,var(--blue));font-family:monospace;font-size:.82rem}.bolt{color:var(--red);font-size:1.5rem;font-weight:900}.flow{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.flow div{padding:13px;border:1px solid var(--line);border-radius:10px;background:var(--panel2)}.flow strong{display:block;color:var(--mint)}.flow span{color:var(--muted);font-size:.84rem}.sessions{grid-template-columns:1fr}.check{display:flex;gap:9px;padding:10px 12px;border:1px solid var(--line);border-radius:9px;background:var(--panel2)}.check input{accent-color:var(--mint)}.check:has(input:checked){opacity:.65;text-decoration:line-through}.track{height:9px;margin:12px 0 5px;border-radius:9px;overflow:hidden;background:var(--panel2)}.fill{height:100%;width:0;background:linear-gradient(90deg,var(--mint),var(--blue));transition:width .2s}.progress{color:var(--muted);font-size:.86rem}details{margin:9px 0;border:1px solid var(--line);border-radius:9px;background:var(--panel2)}summary{padding:11px 13px;font-weight:750;cursor:pointer}details p{padding:0 13px 10px;color:var(--muted)}footer{text-align:center;color:var(--muted);padding-bottom:42px}.back{position:fixed;right:16px;bottom:16px;width:40px;height:40px;display:grid;place-items:center;border:1px solid var(--line);border-radius:50%;background:var(--panel);color:var(--text);text-decoration:none;box-shadow:var(--shadow)}
+    @media(max-width:900px){.layout{grid-template-columns:1fr}.nav{position:static;max-height:none;columns:3}.stats,.flow{grid-template-columns:repeat(2,1fr)}.mechanisms{grid-template-columns:repeat(2,1fr)}}
+    @media(max-width:640px){.hero,section{padding:22px 18px}.stats,.cards,.mechanisms,.flow{grid-template-columns:1fr}.nav{columns:1}.race{grid-template-columns:1fr}.bolt{text-align:center;transform:rotate(90deg)}}
+    @media print{.top,.nav,.back,.copy{display:none}.layout{display:block}body{background:#fff}.hero,section{box-shadow:none;break-inside:avoid}}
+  </style>
+</head>
+<body id="top">
+  <header class="top"><div class="topin"><div class="brand">🅿 Parking Lot LLD</div><div class="actions"><a class="btn" href="parking-lot-lld-concurrency.md">Markdown</a><button class="btn" id="theme" type="button" aria-label="Toggle color theme">◐ Theme</button></div></div></header>
+
+  <div class="hero">
+    <span class="eyebrow">Low-Level Design · Java 21+ · Concurrency</span>
+    <h1>Design a Parking Lot that cannot double-book.</h1>
+    <p>A practical journey through requirements, invariants, SOLID, design patterns, thread safety, mutexes, semaphores, atomic variables, and database locking.</p>
+    <div class="stats"><div class="stat"><strong>Correctness first</strong><span>Invariants before classes</span></div><div class="stat"><strong>6 patterns</strong><span>Used with purpose</span></div><div class="stat"><strong>5 concurrency tools</strong><span>Compared honestly</span></div><div class="stat"><strong>8 sessions</strong><span>Model to production</span></div></div>
+  </div>
+
+  <div class="layout">
+    <aside class="nav"><a href="#mindset">1. Mindset</a><a href="#requirements">2. Requirements</a><a href="#invariants">3. Invariants</a><a href="#model">4. Domain model</a><a href="#solid">5. SOLID</a><a href="#patterns">6. Patterns</a><a href="#race">7. Race condition</a><a href="#tools">8. Concurrency tools</a><a href="#locking">9. DB locking</a><a href="#design">10. Reference design</a><a href="#reliability">11. Reliability</a><a href="#testing">12. Testing</a><a href="#mistakes">13. Mistakes</a><a href="#journey">14. Journey</a><a href="#takeaways">15. Takeaways</a></aside>
+    <main>
+      <section id="mindset"><span class="num">01 · Design mindset</span><h2>Learn the reasoning, not a diagram</h2><p>Follow a repeatable sequence: clarify scope, state invariants, separate responsibilities, expose atomic boundaries, choose a concurrency strategy, test failure paths, then optimize from measurements.</p><div class="flow"><div><strong>Clarify</strong><span>Scope, scale, storage</span></div><div><strong>Protect</strong><span>Invariants and transactions</span></div><div><strong>Separate</strong><span>Domain, policy, storage</span></div><div><strong>Evolve</strong><span>Measure before optimizing</span></div></div><div class="callout"><strong>Senior rule</strong>Correctness is defined by business invariants—not by the presence of a lock or the number of patterns.</div></section>
+
+      <section id="requirements"><span class="num">02 · Requirements</span><h2>Define the boundary before classes</h2><div class="cards"><div class="card good"><h3>First-version scope</h3><p>Multiple floors and gates; typed spots and vehicles; allocation; ticketing; pricing; payment; release; availability display; out-of-service spots.</p></div><div class="card warn"><h3>Defer deliberately</h3><p>Reservations, valet, license-plate recognition, subscriptions, dynamic pricing, charging billing, and multi-region operation.</p></div></div><h3>Questions a senior engineer asks</h3><details><summary>Single process or multiple service instances?</summary><p>A JVM lock protects only one process. Multi-instance correctness belongs in authoritative shared storage.</p></details><details><summary>What does “best spot” mean?</summary><p>Nearest, lowest floor, any compatible spot, accessible eligibility, and reservations require different policies and indexes.</p></details><details><summary>What failures must recover?</summary><p>Duplicate gate events, timeout after allocation, payment success followed by local failure, crashes, and stale display projections all need explicit behavior.</p></details></section>
+
+      <section id="invariants"><span class="num">03 · Invariants</span><h2>State what must never break</h2><div class="cards"><div class="card"><strong>Spot ownership</strong><p>One spot has at most one active ticket; only its owning ticket releases it.</p></div><div class="card"><strong>Ticket consistency</strong><p>Every active ticket points to exactly one occupied spot.</p></div><div class="card"><strong>Payment safety</strong><p>One idempotency key produces at most one charge.</p></div><div class="card"><strong>Availability truth</strong><p>Out-of-service or occupied spots are never allocatable.</p></div></div><div class="callout bad"><strong>Atomic boundary</strong>Occupying a spot and creating its ticket form one business transaction. Two thread-safe maps do not make two updates atomic together.</div></section>
+
+      <section id="model"><span class="num">04 · Domain model</span><h2>Separate identity, values, policies, and storage</h2><div class="table"><table><thead><tr><th>Kind</th><th>Examples</th><th>Guidance</th></tr></thead><tbody><tr><td>Entities</td><td>ParkingLot, Floor, Spot, Ticket, Payment, Gate</td><td>Stable identity and controlled lifecycle</td></tr><tr><td>Value objects</td><td>SpotId, TicketId, Money, VehicleRegistration</td><td>Immutable and compared by value</td></tr><tr><td>Policies</td><td>NearestSpot, HourlyPricing</td><td>Replaceable decision logic</td></tr><tr><td>Ports</td><td>SpotReader, SpotWriter, TicketRepository</td><td>Technology-independent contracts</td></tr></tbody></table></div><div class="code"><button class="copy">Copy</button><pre><code>public record ParkVehicleCommand(
+        String requestId,
+        Vehicle vehicle,
+        GateId entryGateId,
+        Instant requestedAt) {}
+
+public interface ParkingUseCases {
+    ParkingTicket park(ParkVehicleCommand command);
+    Receipt exit(ExitVehicleCommand command);
+}</code></pre></div><p>The request ID is an idempotency key: a timed-out retry returns the original result instead of allocating twice.</p></section>
+
+      <section id="solid"><span class="num">05 · SOLID</span><h2>Control change and dependency direction</h2><div class="mechanisms"><div class="card good"><h3>S — Single responsibility</h3><p>Allocation, pricing, storage, payment, and orchestration change independently.</p></div><div class="card good"><h3>O — Open/closed</h3><p>Add a policy implementation without rewriting the workflow.</p></div><div class="card good"><h3>L — Liskov substitution</h3><p>Every adapter preserves the contract, including idempotency.</p></div><div class="card good"><h3>I — Interface segregation</h3><p>Displays read availability without receiving mutation methods.</p></div><div class="card good"><h3>D — Dependency inversion</h3><p>Workflow code depends on ports, not SQL or SDK classes.</p></div></div><div class="callout warn"><strong>Do not over-abstract</strong>SOLID does not mean maximizing interfaces. Add an abstraction at a real change, ownership, test, or technology boundary.</div></section>
+
+      <section id="patterns"><span class="num">06 · Design patterns</span><h2>Use only patterns that solve a named problem</h2><div class="table"><table><thead><tr><th>Pattern</th><th>Parking use</th><th>Risk</th></tr></thead><tbody><tr><td>Strategy</td><td>Allocation and pricing policies</td><td>Classes for trivial conditionals</td></tr><tr><td>Factory</td><td>Create configured policies</td><td>Hidden service locator</td></tr><tr><td>Repository</td><td>Hide spot/ticket storage</td><td>Leaking database models</td></tr><tr><td>State</td><td>Legal ticket/payment transitions</td><td>Overbuilt object graph</td></tr><tr><td>Observer / Event</td><td>Displays, audit, notification</td><td>Publishing before commit</td></tr><tr><td>Facade</td><td>Cohesive entry/exit API</td><td>Giant manager class</td></tr></tbody></table></div><div class="code"><button class="copy">Copy</button><pre><code>public interface SpotAllocationPolicy {
+    List&lt;ParkingSpotSnapshot&gt; rankCandidates(
+            Vehicle vehicle,
+            List&lt;ParkingSpotSnapshot&gt; candidates);
+}
+
+public interface PricingPolicy {
+    Money calculate(ParkingTicket ticket, Instant exitTime);
+}</code></pre></div><p>The policy ranks candidates. A concurrency-aware repository atomically claims the winner.</p></section>
+
+      <section id="race"><span class="num">07 · Concurrency foundations</span><h2>The double-booking race</h2><div class="race"><div class="thread"><strong>Gate A</strong><div>read A-17 → AVAILABLE</div><div>create T-101</div><div>write A-17 → T-101</div></div><div class="bolt">⚡</div><div class="thread"><strong>Gate B</strong><div>read A-17 → AVAILABLE</div><div>create T-102</div><div>write A-17 → T-102</div></div></div><div class="callout bad"><strong>Broken invariant</strong>Both requests can report success, while one write overwrites the other. This is a compound check-then-act race.</div><div class="mechanisms"><div class="card"><strong>Atomicity</strong><p>Observers see all of an operation or none.</p></div><div class="card"><strong>Visibility</strong><p>One thread sees another thread’s writes.</p></div><div class="card"><strong>Ordering</strong><p>Operations are observed in a valid order.</p></div></div><p><code>volatile</code> helps visibility and ordering, but it does not make <code>count++</code> or “if available, occupy” atomic.</p></section>
+
+      <section id="tools"><span class="num">08 · Concurrency tools</span><h2>Choose by scope and contention</h2><div class="cards"><div class="card good"><h3>Mutex / ReentrantLock</h3><p>Exactly one owner protects a critical section. Best first choice for one in-memory aggregate.</p></div><div class="card warn"><h3>Semaphore</h3><p>Bounds concurrent permit holders. Good admission control; not authoritative inventory.</p></div><div class="card good"><h3>Atomic variable / CAS</h3><p>Conditionally changes one memory location. Good for counters and compact immutable states.</p></div><div class="card warn"><h3>Database transaction</h3><p>Protects multi-record invariants across service instances.</p></div></div><h3>Mutex</h3><div class="code"><button class="copy">Copy</button><pre><code>private final Lock stateLock = new ReentrantLock();
+
+public ParkingTicket park(Vehicle vehicle) {
+    stateLock.lock();
+    try {
+        return allocateUnderLock(vehicle);
+    } finally {
+        stateLock.unlock();
+    }
+}</code></pre></div><h3>Semaphore</h3><div class="code"><button class="copy">Copy</button><pre><code>private final Semaphore entryCapacity = new Semaphore(20, true);
+
+public ParkingTicket handleEntry(ParkVehicleCommand command) {
+    if (!entryCapacity.tryAcquire()) {
+        throw new EntryBusyException("All entry permits are in use; retry shortly");
+    }
+    try {
+        return parkingUseCases.park(command);
+    } finally {
+        entryCapacity.release();
+    }
+}</code></pre></div><h3>Atomic compare-and-set</h3><div class="code"><button class="copy">Copy</button><pre><code>private final AtomicReference&lt;SpotOccupancy&gt; occupancy =
+        new AtomicReference&lt;&gt;(SpotOccupancy.available());
+
+public boolean tryOccupy(TicketId ticketId) {
+    return occupancy.compareAndSet(
+            SpotOccupancy.available(),
+            SpotOccupancy.occupiedBy(ticketId));
+}</code></pre></div><div class="callout warn"><strong>Scope warning</strong>JVM locks and atomics do not coordinate other service instances. Multiple atomics also do not automatically form one transaction.</div></section>
+
+      <section id="locking"><span class="num">09 · Database locking</span><h2>Optimistic vs pessimistic locking</h2><div class="cards"><div class="card good"><h3>Optimistic</h3><p>Read without locking, then write only if status and version are unchanged. Best when conflicts are uncommon.</p></div><div class="card warn"><h3>Pessimistic</h3><p>Lock a candidate before mutation. Useful for hot rows and short transactions; introduces waits and deadlock risk.</p></div></div><h3>Optimistic conditional write</h3><div class="code"><button class="copy">Copy</button><pre><code>UPDATE parking_spot
+SET status = 'OCCUPIED',
+    current_ticket_id = :ticket_id,
+    version = version + 1
+WHERE spot_id = :spot_id
+  AND status = 'AVAILABLE'
+  AND version = :expected_version;</code></pre></div><p>One affected row means this request won. Zero means a conflict: try another bounded candidate or return a controlled outcome.</p><h3>Pessimistic candidate claim</h3><div class="code"><button class="copy">Copy</button><pre><code>BEGIN;
+SELECT spot_id, version
+FROM parking_spot
+WHERE floor_id = :floor_id
+  AND spot_type IN (:compatible_types)
+  AND status = 'AVAILABLE'
+ORDER BY distance_from_entry, spot_id
+FOR UPDATE SKIP LOCKED
+LIMIT 1;
+
+UPDATE parking_spot
+SET status = 'OCCUPIED', current_ticket_id = :ticket_id,
+    version = version + 1
+WHERE spot_id = :spot_id;
+INSERT INTO parking_ticket (...) VALUES (...);
+COMMIT;</code></pre></div><div class="table"><table><thead><tr><th>Factor</th><th>Optimistic</th><th>Pessimistic</th></tr></thead><tbody><tr><td>Conflict rate</td><td>Low/moderate</td><td>High/hot rows</td></tr><tr><td>Loser</td><td>Detects and retries</td><td>Waits or skips</td></tr><tr><td>Main risk</td><td>Retry storm/starvation</td><td>Waits/deadlocks</td></tr><tr><td>Practice</td><td>Bound retries and side effects</td><td>Short transaction, fixed lock order</td></tr></tbody></table></div></section>
+
+      <section id="design"><span class="num">10 · Reference design</span><h2>Start coarse-grained and correct</h2><p>A first in-memory implementation can protect spot selection, occupancy, and active-ticket creation with one lock. It limits throughput but makes the atomic boundary obvious.</p><div class="code"><button class="copy">Copy</button><pre><code>public final class ThreadSafeParkingLot {
+    private final Map&lt;SpotId, MutableSpot&gt; spotsById;
+    private final Map&lt;TicketId, ParkingTicket&gt; activeTickets = new HashMap&lt;&gt;();
+    private final SpotAllocationPolicy allocationPolicy;
+    private final Lock stateLock = new ReentrantLock();
+    private final AtomicLong ticketSequence = new AtomicLong();
+    private final Clock clock;
+
+    public ParkingTicket park(Vehicle vehicle) {
+        Objects.requireNonNull(vehicle, "vehicle is required");
+        stateLock.lock();
+        try {
+            ParkingSpotSnapshot selected = allocationPolicy
+                    .rankCandidates(vehicle, availableSnapshots())
+                    .stream().findFirst()
+                    .orElseThrow(() -&gt; new ParkingFullException(
+                            "No compatible spot is available for " + vehicle.type()));
+            TicketId ticketId = new TicketId(
+                    "T-" + ticketSequence.incrementAndGet());
+            MutableSpot spot = spotsById.get(selected.id());
+            spot.occupy(ticketId);
+            ParkingTicket ticket = ParkingTicket.open(
+                    ticketId, vehicle, spot.id(), clock.instant());
+            activeTickets.put(ticketId, ticket);
+            return ticket;
+        } finally {
+            stateLock.unlock();
+        }
+    }
+}</code></pre></div><div class="flow"><div><strong>V1</strong><span>One aggregate lock</span></div><div><strong>V2</strong><span>Bounded candidate index</span></div><div><strong>V3</strong><span>DB transaction/version</span></div><div><strong>V4</strong><span>Outbox and recovery</span></div></div></section>
+
+      <section id="reliability"><span class="num">11 · Reliability</span><h2>Correct retries belong in the LLD</h2><div class="cards"><div class="card"><strong>Idempotency</strong><p>Persist unique operation/request IDs and results so retries converge.</p></div><div class="card"><strong>Constraints</strong><p>Reinforce ownership, valid states, and active-ticket uniqueness in the database.</p></div><div class="card"><strong>Transactional outbox</strong><p>Commit business state and event together; publish afterward to idempotent consumers.</p></div><div class="card"><strong>Payment reconciliation</strong><p>Use pending state and provider idempotency. Never hold a lock over a network call.</p></div></div><div class="callout"><strong>Cache rule</strong>A cache may find candidates, but an authoritative conditional write or transaction decides the winner.</div></section>
+
+      <section id="testing"><span class="num">12 · Testing</span><h2>Assert invariants under collision</h2><div class="cards"><div class="card good"><strong>Unit</strong><p>Compatibility, ranking, pricing boundaries, legal state transitions, wrong-owner release, idempotency.</p></div><div class="card good"><strong>Concurrent</strong><p>One spot and 100 synchronized callers must produce exactly one success.</p></div><div class="card good"><strong>Integration</strong><p>Conflict, rollback, duplicate request, deadlock retry, outbox, and payment recovery.</p></div><div class="card good"><strong>Metrics</strong><p>p99 latency, conflict rate, retries, lock waits, deadlocks, and reconciliation lag.</p></div></div><div class="callout warn"><strong>Testing limit</strong>A latch increases collision probability but does not prove every interleaving. Repeat stress tests and assert system-wide invariants.</div></section>
+
+      <section id="mistakes"><span class="num">13 · Common mistakes</span><h2>Attractive but incomplete solutions</h2><div class="cards"><div class="card bad"><strong>“Use ConcurrentHashMap”</strong><p>It does not make a cross-map workflow atomic.</p></div><div class="card bad"><strong>“Make status volatile”</strong><p>Visibility is not compound atomicity.</p></div><div class="card bad"><strong>“Semaphore equals free spots”</strong><p>Permits drift and do not identify a spot.</p></div><div class="card bad"><strong>“Use a Singleton”</strong><p>It hides dependencies and stops at one process.</p></div><div class="card bad"><strong>“Lock through payment”</strong><p>Network calls amplify latency and failures.</p></div><div class="card bad"><strong>“Retry forever”</strong><p>Unbounded retry causes overload and duplicates.</p></div></div></section>
+
+      <section id="journey"><span class="num">14 · Learning journey</span><h2>Eight sessions from model to production</h2><p>Progress is stored locally by this browser. Keep detailed decisions and future notes in the Markdown companion.</p><div class="track"><div class="fill" id="fill"></div></div><div class="progress" id="progress">0 of 8 sessions complete</div><div class="sessions" id="checks"><label class="check"><input type="checkbox" data-key="requirements"> Session 1 — Requirements, invariants, and diagrams</label><label class="check"><input type="checkbox" data-key="solid"> Session 2 — SOLID interfaces and policies</label><label class="check"><input type="checkbox" data-key="race"> Session 3 — Reproduce the double-booking race</label><label class="check"><input type="checkbox" data-key="memory"> Session 4 — Mutex, semaphore, atomics, and thread safety</label><label class="check"><input type="checkbox" data-key="database"> Session 5 — Optimistic and pessimistic locking</label><label class="check"><input type="checkbox" data-key="reliability"> Session 6 — Idempotency, payment state, and outbox</label><label class="check"><input type="checkbox" data-key="testing"> Session 7 — Concurrent and integration tests</label><label class="check"><input type="checkbox" data-key="performance"> Session 8 — Metrics and design evolution</label></div><h3>Next decisions</h3><ol><li>Console app, REST service, or domain library?</li><li>Maven or Gradle?</li><li>Start in memory or include PostgreSQL immediately?</li><li>Begin with diagrams or an intentionally unsafe race demo?</li></ol></section>
+
+      <section id="takeaways"><span class="num">15 · Senior takeaways</span><h2>Carry these into every LLD</h2><ul><li>Invariants define correctness; a lock is an implementation mechanism.</li><li>The atomic boundary matters more than the class count.</li><li>Thread safety in one process and consistency across instances are different problems.</li><li>Mutex means exclusion, semaphore means permits, and atomic CAS means one-value transition.</li><li>Optimistic locking detects conflicts; pessimistic locking reserves before mutation.</li><li>SOLID controls reasons for change and dependency direction.</li><li>Idempotency, constraints, recovery, and observability are design concerns.</li><li>Start with the simplest correct approach, measure, and evolve deliberately.</li></ul></section>
+    </main>
+  </div>
+
+  <footer><p>Canonical notes: <a href="parking-lot-lld-concurrency.md">parking-lot-lld-concurrency.md</a></p></footer><a class="back" href="#top" aria-label="Back to top">↑</a>
+  <script>
+    (() => {
+      const root = document.documentElement;
+      const theme = localStorage.getItem('lld-theme') || (matchMedia('(prefers-color-scheme:light)').matches ? 'light' : 'dark');
+      root.dataset.theme = theme;
+      document.getElementById('theme').addEventListener('click', () => {
+        root.dataset.theme = root.dataset.theme === 'dark' ? 'light' : 'dark';
+        localStorage.setItem('lld-theme', root.dataset.theme);
+      });
+      document.querySelectorAll('.copy').forEach((button) => button.addEventListener('click', async () => {
+        try {
+          await navigator.clipboard.writeText(button.nextElementSibling.textContent);
+          button.textContent = 'Copied';
+          setTimeout(() => { button.textContent = 'Copy'; }, 1000);
+        } catch (error) {
+          button.textContent = 'Select text';
+        }
+      }));
+      const checks = [...document.querySelectorAll('[data-key]')];
+      const saved = JSON.parse(localStorage.getItem('lld-progress') || '{}');
+      const update = () => {
+        const done = checks.filter((item) => item.checked).length;
+        document.getElementById('fill').style.width = `${done / checks.length * 100}%`;
+        document.getElementById('progress').textContent = `${done} of ${checks.length} sessions complete`;
+        localStorage.setItem('lld-progress', JSON.stringify(Object.fromEntries(checks.map((item) => [item.dataset.key, item.checked]))));
+      };
+      checks.forEach((item) => { item.checked = Boolean(saved[item.dataset.key]); item.addEventListener('change', update); });
+      update();
+      const links = [...document.querySelectorAll('.nav a')];
+      const observer = new IntersectionObserver((entries) => entries.forEach((entry) => {
+        if (entry.isIntersecting) links.forEach((link) => link.classList.toggle('active', link.hash === `#${entry.target.id}`));
+      }), { rootMargin: '-20% 0px -70% 0px' });
+      links.forEach((link) => observer.observe(document.querySelector(link.hash)));
+    })();
+  </script>
+</body>
+</html>
