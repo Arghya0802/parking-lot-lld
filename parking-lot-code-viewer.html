@@ -1,0 +1,241 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Guided source-code walkthrough for the thread-safe Parking Lot implementation in Java, C++20, and Python.">
+  <title>Parking Lot · Guided Code Viewer</title>
+  <style>
+    :root{color-scheme:dark;--bg:#070c17;--surface:#0e1728;--surface2:#14233a;--surface3:#1b2f4e;--text:#edf4ff;--muted:#9eafc8;--line:#2a4063;--accent:#60dfc1;--accent2:#85a9ff;--amber:#ffd071;--red:#ff8394;--green:#77e3a0;--code:#050a13;--keyword:#ff87c8;--type:#82d8ff;--string:#b9e681;--number:#ffca78;--comment:#7086a5;--shadow:0 22px 70px #0007;--radius:16px}
+    html[data-theme="light"]{color-scheme:light;--bg:#f3f6fb;--surface:#fff;--surface2:#edf3fa;--surface3:#e2ebf6;--text:#14223a;--muted:#52647e;--line:#cddaea;--accent:#087e69;--accent2:#315fc6;--amber:#916000;--red:#b63449;--green:#197348;--code:#111a2b;--keyword:#ff91ce;--type:#8ad8ff;--string:#bce982;--number:#ffd083;--comment:#8395ae;--shadow:0 18px 55px #253c6024}
+    *{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:radial-gradient(circle at 10% -10%,color-mix(in srgb,var(--accent2) 17%,transparent),transparent 34rem),var(--bg);color:var(--text);font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;line-height:1.6}a{color:var(--accent);text-underline-offset:3px}button,input{font:inherit}:focus-visible{outline:3px solid var(--accent2);outline-offset:3px}.topbar{position:sticky;top:0;z-index:30;border-bottom:1px solid color-mix(in srgb,var(--line) 82%,transparent);background:color-mix(in srgb,var(--bg) 89%,transparent);backdrop-filter:blur(16px)}.topin,.hero,.workspace,.notes,footer{width:min(1440px,calc(100% - 30px));margin-inline:auto}.topin{min-height:64px;display:flex;align-items:center;justify-content:space-between;gap:12px}.brand{display:flex;align-items:center;gap:10px;font-weight:850}.mark{width:35px;height:35px;display:grid;place-items:center;border-radius:10px;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#07101c}.actions{display:flex;gap:8px}.button{display:inline-flex;align-items:center;gap:6px;padding:7px 11px;border:1px solid var(--line);border-radius:9px;background:var(--surface);color:var(--text);text-decoration:none;cursor:pointer}.button:hover{border-color:var(--accent);background:var(--surface2)}.hero{margin-top:34px;padding:30px;border:1px solid var(--line);border-radius:21px;background:linear-gradient(145deg,color-mix(in srgb,var(--surface) 92%,var(--accent2)),var(--surface));box-shadow:var(--shadow)}.eyebrow{color:var(--accent);font-size:.76rem;font-weight:850;letter-spacing:.1em;text-transform:uppercase}.hero h1{margin:7px 0 8px;font-size:clamp(2rem,5vw,3.7rem);line-height:1.04;letter-spacing:-.05em}.hero p{max-width:850px;margin:0;color:var(--muted);font-size:1.05rem}.language-tabs{display:flex;flex-wrap:wrap;gap:8px;margin-top:20px}.language-tab{padding:8px 13px;border:1px solid var(--line);border-radius:10px;background:var(--surface2);color:var(--muted);text-decoration:none;font-weight:750}.language-tab.active{border-color:var(--language-accent,var(--accent));color:var(--text);box-shadow:inset 0 -3px var(--language-accent,var(--accent))}.meta{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px}.pill{padding:4px 9px;border:1px solid var(--line);border-radius:99px;background:color-mix(in srgb,var(--surface2) 85%,transparent);color:var(--muted);font-size:.78rem}.workspace{display:grid;grid-template-columns:280px minmax(0,1fr);gap:18px;margin-top:20px;align-items:start}.tour{position:sticky;top:83px;max-height:calc(100vh - 100px);overflow:auto;padding:14px;border:1px solid var(--line);border-radius:var(--radius);background:var(--surface)}.tour h2{margin:2px 6px 10px;font-size:.78rem;color:var(--muted);letter-spacing:.09em;text-transform:uppercase}.chapter{width:100%;margin:3px 0;padding:10px;border:1px solid transparent;border-radius:9px;background:transparent;color:var(--muted);text-align:left;cursor:pointer}.chapter:hover,.chapter.active{border-color:var(--line);background:var(--surface2);color:var(--text)}.chapter strong{display:block;font-size:.9rem}.chapter span{display:block;margin-top:2px;font-size:.76rem;color:var(--muted)}.understand{margin-top:12px;padding:13px;border:1px solid var(--line);border-radius:11px;background:var(--surface2)}.understand small{display:block;color:var(--accent);font-weight:850;text-transform:uppercase;letter-spacing:.08em}.understand h3{margin:5px 0;font-size:1rem}.understand p{margin:0;color:var(--muted);font-size:.84rem}.code-card{min-width:0;overflow:hidden;border:1px solid var(--line);border-radius:var(--radius);background:var(--surface);box-shadow:0 10px 35px #0003}.toolbar{position:sticky;top:64px;z-index:15;display:flex;align-items:center;gap:8px;padding:10px;border-bottom:1px solid var(--line);background:color-mix(in srgb,var(--surface) 94%,transparent);backdrop-filter:blur(12px)}.file-name{margin-right:auto;font:750 .88rem/1.2 "SFMono-Regular",Consolas,monospace;color:var(--text)}.search-wrap{display:flex;align-items:center;gap:6px}.search{width:min(280px,28vw);padding:7px 10px;border:1px solid var(--line);border-radius:8px;background:var(--surface2);color:var(--text)}.search-count{min-width:45px;color:var(--muted);font-size:.76rem}.icon-button{padding:6px 9px;border:1px solid var(--line);border-radius:8px;background:var(--surface2);color:var(--text);cursor:pointer}.icon-button:hover{border-color:var(--accent)}.status{min-height:550px;display:grid;place-items:center;padding:30px;color:var(--muted);text-align:center}.status strong{display:block;color:var(--text);font-size:1.05rem}.status .loader{width:32px;height:32px;margin:0 auto 13px;border:3px solid var(--line);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite}@keyframes spin{to{transform:rotate(360deg)}}.source{display:none;max-height:calc(100vh - 125px);overflow:auto;background:var(--code);counter-reset:line}.line{display:grid;grid-template-columns:64px minmax(max-content,1fr);min-height:24px;font:13px/24px "SFMono-Regular",Consolas,"Liberation Mono",monospace}.line:hover{background:#8aabff0d}.line.focused{background:#5ee0c119;box-shadow:inset 3px 0 var(--accent)}.line.match{background:#ffd16f18}.line-number{position:sticky;left:0;z-index:2;padding-right:13px;border-right:1px solid #243755;background:color-mix(in srgb,var(--code) 96%,transparent);color:#5f7595;text-align:right;user-select:none;text-decoration:none}.line-number:hover{color:var(--accent)}.line-code{display:block;padding:0 18px;white-space:pre;tab-size:4;color:#dce9ff}.tok-keyword{color:var(--keyword);font-weight:650}.tok-type{color:var(--type)}.tok-string{color:var(--string)}.tok-number{color:var(--number)}.tok-comment{color:var(--comment);font-style:italic}.search-hit{border-radius:3px;background:#ffe071;color:#162139}.fallback{max-width:650px}.fallback code{display:block;margin:12px 0;padding:12px;border:1px solid var(--line);border-radius:9px;background:var(--code);color:#dce9ff;text-align:left}.notes{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:20px;margin-bottom:70px}.note{padding:18px;border:1px solid var(--line);border-radius:14px;background:var(--surface)}.note h3{margin:0 0 7px;font-size:1rem}.note p,.note li{color:var(--muted);font-size:.88rem}.note ul{padding-left:1.2rem}.note li+li{margin-top:4px}.note.invariant{border-top:3px solid var(--red)}.note.optimistic{border-top:3px solid var(--accent)}.note.pessimistic{border-top:3px solid var(--amber)}.flow{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin-top:12px}.flow div{padding:9px;border:1px solid var(--line);border-radius:8px;background:var(--surface2);text-align:center}.flow strong{display:block;color:var(--accent);font-size:.82rem}.flow span{color:var(--muted);font-size:.73rem}footer{text-align:center;color:var(--muted);padding-bottom:45px}
+    @media(max-width:1020px){.workspace{grid-template-columns:1fr}.tour{position:static;max-height:none}.chapters{display:grid;grid-template-columns:repeat(3,1fr)}.understand{grid-column:1/-1}.notes{grid-template-columns:1fr 1fr}.toolbar{top:64px}}
+    @media(max-width:700px){.hero{padding:23px 19px}.chapters,.notes{grid-template-columns:1fr}.toolbar{flex-wrap:wrap}.file-name{width:100%;margin:0}.search-wrap{flex:1}.search{width:100%}.line{grid-template-columns:48px minmax(max-content,1fr)}.line-code{padding:0 12px}.actions .label{display:none}.flow{grid-template-columns:repeat(2,1fr)}}
+    @media print{.topbar,.tour,.toolbar{display:none}.workspace{display:block}.source{display:block;max-height:none}.notes{grid-template-columns:1fr}.line-number{position:static}.hero,.code-card,.note{box-shadow:none}}
+  </style>
+</head>
+<body>
+  <header class="topbar"><div class="topin"><div class="brand"><span class="mark">{ }</span><span>Guided Code Viewer</span></div><div class="actions"><a class="button" href="parking-lot-code-revision.html">← <span class="label">Revision page</span></a><button class="button" id="theme" type="button" aria-label="Toggle color theme">◐ <span class="label">Theme</span></button></div></div></header>
+
+  <div class="hero">
+    <span class="eyebrow">Parking Lot · Complete runnable source</span>
+    <h1 id="title">Loading code…</h1>
+    <p id="subtitle">The code is organized as a guided tour so you can understand responsibilities and concurrency boundaries—not just read syntax.</p>
+    <nav class="language-tabs" aria-label="Choose language"><a class="language-tab" data-language="java" href="?lang=java">☕ Java</a><a class="language-tab" data-language="cpp" href="?lang=cpp">⚙ C++20</a><a class="language-tab" data-language="python" href="?lang=python">🐍 Python</a></nav>
+    <div class="meta"><span class="pill" id="version">Version</span><span class="pill" id="line-count">Counting lines…</span><span class="pill">Optimistic + pessimistic</span><span class="pill">40-thread collision demo</span><span class="pill">Single source file</span></div>
+  </div>
+
+  <div class="workspace">
+    <aside class="tour">
+      <h2>Guided tour</h2>
+      <div class="chapters" id="chapters"></div>
+      <div class="understand" id="understand"><small>How to read this</small><h3>Pick a chapter</h3><p>I’ll take you to the relevant code and explain the responsibility and trade-off.</p></div>
+    </aside>
+
+    <section class="code-card" aria-label="Source code">
+      <div class="toolbar"><span class="file-name" id="file-name">source</span><div class="search-wrap"><input class="search" id="search" type="search" placeholder="Search symbols or text" aria-label="Search source"><span class="search-count" id="search-count"></span></div><button class="icon-button" id="previous" type="button" title="Previous search result">↑</button><button class="icon-button" id="next" type="button" title="Next search result">↓</button><a class="icon-button" id="raw" href="ParkingLotDemo.java" title="Open raw source" aria-label="Open raw source">Raw</a></div>
+      <div class="status" id="status"><div><div class="loader"></div><strong>Loading complete source</strong><span>Preparing syntax colors and chapter anchors…</span></div></div>
+      <div class="source" id="source" aria-label="Rendered source code"></div>
+    </section>
+  </div>
+
+  <div class="notes">
+    <article class="note invariant"><h3>🔒 Protected invariant</h3><p>The immutable state contains both spots and active tickets. Each successful commit changes both together, preventing half-completed allocation.</p><div class="flow"><div><strong>Read</strong><span>snapshot</span></div><div><strong>Select</strong><span>spot</span></div><div><strong>Build</strong><span>new state</span></div><div><strong>Commit</strong><span>atomically</span></div></div></article>
+    <article class="note optimistic"><h3>⚡ Optimistic mode</h3><ul><li>Computes from an immutable snapshot.</li><li>CAS succeeds only if state is unchanged.</li><li>Conflicts retry with a strict bound.</li><li>Best when collisions are uncommon.</li></ul></article>
+    <article class="note pessimistic"><h3>🔑 Pessimistic mode</h3><ul><li>Locks before reading and deciding.</li><li>One thread owns the transition.</li><li>Unlock uses finally, RAII, or context manager.</li><li>Best for short, consistently hot operations.</li></ul></article>
+  </div>
+
+  <footer><p>Tip: explain each chapter without looking, then use the code to correct your mental model.</p></footer>
+
+  <script>
+    (() => {
+      const REPOSITORY_RAW_BASE = 'https://raw.githubusercontent.com/Arghya0802/parking-lot-lld/main/';
+      const CONFIG = {
+        java: {
+          title: 'Java 21+ implementation', file: 'ParkingLotDemo.java', version: 'Java 21+', accent: '#f89820',
+          subtitle: 'Records model immutable values, AtomicReference commits whole-state transitions, ReentrantLock provides pessimistic exclusion, and Semaphore bounds entry work.',
+          keywords: ['abstract','assert','boolean','break','case','catch','class','continue','default','do','else','enum','extends','false','final','finally','for','if','implements','import','instanceof','interface','new','null','package','private','protected','public','record','return','static','super','switch','this','throw','throws','true','try','var','void','while','yield'],
+          chapters: [
+            ['Domain vocabulary','enum VehicleType','Start with explicit domain states instead of scattered strings. Enums make invalid spellings impossible and switch expressions exhaustive.'],
+            ['Immutable spot','record ParkingSpot','The spot validates ownership locally. occupy() and releaseOwnedBy() return new values rather than mutating shared objects.'],
+            ['Aggregate snapshot','record LotState','Spots and tickets live in one immutable record. One AtomicReference swap is therefore the complete business transaction.'],
+            ['Strategy boundary','interface SpotAllocationStrategy','ParkingLot depends on a focused policy interface. The nearest-compatible algorithm can change without changing concurrency control.'],
+            ['Facade and dependencies','static final class ParkingLot','The facade owns use-case orchestration and receives policies, clock, mode, and capacity through its constructor.'],
+            ['Semaphore admission','entryPermits.acquire()','The semaphore bounds entry work. Its permits deliberately do not represent free parking spots.'],
+            ['Optimistic CAS','private ParkingTicket parkOptimistically','Read a snapshot, build a new state, and compare-and-set. If another thread won, retry from fresh state.'],
+            ['Pessimistic mutex','private ParkingTicket parkPessimistically','ReentrantLock guards selection and commit. finally guarantees release even when allocation throws.'],
+            ['Concurrent proof','public static void main','Forty workers start together and compete for one spot. The assertions require exactly one winner and a correct release.']
+          ]
+        },
+        cpp: {
+          title: 'C++20 implementation', file: 'parking_lot_demo.cpp', version: 'C++20', accent: '#6295cb',
+          subtitle: 'Value types model snapshots, portable atomic shared_ptr operations commit state, std::mutex provides exclusion, and RAII safely returns semaphore permits.',
+          keywords: ['alignas','alignof','and','asm','auto','bool','break','case','catch','class','const','constexpr','continue','default','delete','do','double','else','enum','explicit','false','final','float','for','friend','if','inline','int','long','namespace','new','noexcept','not','nullptr','operator','override','private','protected','public','return','short','signed','sizeof','static','struct','switch','template','this','throw','true','try','typedef','typename','union','unsigned','using','virtual','void','volatile','while'],
+          chapters: [
+            ['Domain vocabulary','enum class VehicleType','Scoped enums model valid domain states without leaking names into the surrounding namespace.'],
+            ['Immutable-style spot','struct ParkingSpot','Spot methods return changed copies. Optional ticket ownership is validated by transition methods.'],
+            ['Aggregate snapshot','struct LotState','Maps of spots and tickets are copied into a new snapshot so readers never observe in-place mutation.'],
+            ['Strategy boundary','class SpotAllocationStrategy','A virtual interface separates allocation policy from the ParkingLot workflow and synchronization.'],
+            ['Facade and ownership','class ParkingLot final','The facade owns shared state, strategies, semaphore, ticket counter, and pessimistic mutex with explicit lifetimes.'],
+            ['RAII permit guard','class PermitGuard final','Construction acquires a semaphore permit and destruction releases it, including every exception path.'],
+            ['Optimistic CAS','ParkingTicket parkOptimistically','Portable shared_ptr atomic functions compare the expected snapshot pointer and publish the complete replacement.'],
+            ['Pessimistic mutex','ParkingTicket parkPessimistically','lock_guard makes mutex release automatic and keeps the protected scope visible.'],
+            ['Concurrent proof','int main','A C++20 barrier releases forty threads together. Atomic winner count and postconditions verify the invariant.']
+          ]
+        },
+        python: {
+          title: 'Python 3.11+ implementation', file: 'parking_lot_demo.py', version: 'Python 3.11+', accent: '#ffd343',
+          subtitle: 'Frozen dataclasses model snapshots, a short lock supplies portable CAS semantics, RLock provides pessimistic mode, and BoundedSemaphore limits admission.',
+          keywords: ['and','as','assert','async','await','break','case','class','continue','def','del','elif','else','except','False','finally','for','from','global','if','import','in','is','lambda','match','None','nonlocal','not','or','pass','raise','return','True','try','while','with','yield'],
+          chapters: [
+            ['Domain vocabulary','class VehicleType','Enums replace string comparisons and keep compatibility logic explicit.'],
+            ['Frozen spot value','class ParkingSpot','A frozen, slotted dataclass returns replacements from occupy and release instead of exposing mutable state.'],
+            ['Aggregate snapshot','class LotState','Tuples make nested state immutable enough for safe sharing and identity-based version validation.'],
+            ['Strategy boundary','class SpotAllocationStrategy','An abstract interface separates selection policy from synchronization and state ownership.'],
+            ['Portable atomic counter','class AtomicCounter','Python has no portable stdlib AtomicLong, so a tiny lock-backed abstraction owns counter safety.'],
+            ['Facade and state lock','class ParkingLot','The facade centralizes state ownership while injected policies remain stateless and independently replaceable.'],
+            ['Optimistic validation','def _park_optimistically','Policy work occurs outside the lock. A short compare-and-set section validates that the snapshot is still current.'],
+            ['Pessimistic lock','def _park_pessimistically','The RLock covers reading, selection, transition building, and publication as one critical section.'],
+            ['Concurrent proof','def run_concurrent_demo','ThreadPoolExecutor and Barrier create a collision. Assertions require one winner and exact release.']
+          ]
+        }
+      };
+
+      const params = new URLSearchParams(location.search);
+      const language = CONFIG[params.get('lang')] ? params.get('lang') : 'java';
+      const config = CONFIG[language];
+      let rawSource = '';
+      let searchMatches = [];
+      let currentMatch = -1;
+
+      document.documentElement.style.setProperty('--language-accent', config.accent);
+      document.getElementById('title').textContent = config.title;
+      document.getElementById('subtitle').textContent = config.subtitle;
+      document.getElementById('version').textContent = config.version;
+      document.getElementById('file-name').textContent = config.file;
+      document.getElementById('raw').href = config.file;
+      document.title = `Parking Lot · ${config.title}`;
+      document.querySelectorAll('.language-tab').forEach((tab) => tab.classList.toggle('active', tab.dataset.language === language));
+
+      const root = document.documentElement;
+      root.dataset.theme = localStorage.getItem('parking-viewer-theme') || (matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
+      document.getElementById('theme').addEventListener('click', () => {
+        root.dataset.theme = root.dataset.theme === 'dark' ? 'light' : 'dark';
+        localStorage.setItem('parking-viewer-theme', root.dataset.theme);
+      });
+
+      const escapeHtml = (value) => value
+        .replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;').replaceAll("'", '&#39;');
+
+      function highlightLine(line) {
+        const commentMarker = language === 'python' ? '#' : '//';
+        const markerIndex = line.indexOf(commentMarker);
+        const codePart = markerIndex >= 0 ? line.slice(0, markerIndex) : line;
+        const commentPart = markerIndex >= 0 ? line.slice(markerIndex) : '';
+        const strings = [];
+        let highlighted = escapeHtml(codePart).replace(/(&quot;.*?&quot;|&#39;.*?&#39;)/g, (value) => {
+          const token = `@@str${'x'.repeat(strings.length + 1)}@@`;
+          strings.push({ token, html: `<span class="tok-string">${value}</span>` });
+          return token;
+        });
+        const keywordPattern = new RegExp(`\\b(${config.keywords.join('|')})\\b`, 'g');
+        highlighted = highlighted
+          .replace(keywordPattern, '<span class="tok-keyword">$1</span>')
+          .replace(/\b([A-Z][A-Za-z0-9_]*)\b/g, '<span class="tok-type">$1</span>')
+          .replace(/\b(\d[\d_]*(?:\.\d+)?)\b/g, '<span class="tok-number">$1</span>');
+        strings.forEach(({ token, html }) => { highlighted = highlighted.replace(token, html); });
+        return highlighted + (commentPart ? `<span class="tok-comment">${escapeHtml(commentPart)}</span>` : '');
+      }
+
+      function renderSource() {
+        const lines = rawSource.replace(/\r\n/g, '\n').split('\n');
+        const source = document.getElementById('source');
+        source.innerHTML = lines.map((line, index) => {
+          const number = index + 1;
+          return `<div class="line" id="L${number}" data-line="${number}"><a class="line-number" href="#L${number}" aria-label="Line ${number}">${number}</a><code class="line-code">${highlightLine(line) || ' '}</code></div>`;
+        }).join('');
+        document.getElementById('line-count').textContent = `${lines.length} lines`;
+        document.getElementById('status').style.display = 'none';
+        source.style.display = 'block';
+      }
+
+      function buildChapters() {
+        const container = document.getElementById('chapters');
+        config.chapters.forEach(([title, needle, explanation], index) => {
+          const lineIndex = rawSource.split(/\r?\n/).findIndex((line) => line.includes(needle));
+          const button = document.createElement('button');
+          button.className = 'chapter';
+          button.dataset.line = String(lineIndex + 1);
+          button.innerHTML = `<strong>${index + 1}. ${escapeHtml(title)}</strong><span>${lineIndex >= 0 ? `Line ${lineIndex + 1}` : 'Concept note'}</span>`;
+          button.addEventListener('click', () => focusChapter(button, title, explanation));
+          container.appendChild(button);
+        });
+      }
+
+      function focusChapter(button, title, explanation) {
+        document.querySelectorAll('.chapter').forEach((item) => item.classList.toggle('active', item === button));
+        document.querySelectorAll('.line.focused').forEach((line) => line.classList.remove('focused'));
+        const target = document.getElementById(`L${button.dataset.line}`);
+        if (target) {
+          target.classList.add('focused');
+          target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+        document.getElementById('understand').innerHTML = `<small>Why this matters</small><h3>${escapeHtml(title)}</h3><p>${escapeHtml(explanation)}</p>`;
+      }
+
+      function runSearch() {
+        const query = document.getElementById('search').value.trim().toLowerCase();
+        document.querySelectorAll('.line.match').forEach((line) => line.classList.remove('match'));
+        searchMatches = [];
+        currentMatch = -1;
+        if (query) {
+          rawSource.split(/\r?\n/).forEach((line, index) => {
+            if (line.toLowerCase().includes(query)) {
+              const element = document.getElementById(`L${index + 1}`);
+              element.classList.add('match');
+              searchMatches.push(element);
+            }
+          });
+        }
+        document.getElementById('search-count').textContent = query ? `${searchMatches.length} found` : '';
+        if (searchMatches.length) moveToMatch(1);
+      }
+
+      function moveToMatch(direction) {
+        if (!searchMatches.length) return;
+        currentMatch = (currentMatch + direction + searchMatches.length) % searchMatches.length;
+        searchMatches[currentMatch].scrollIntoView({ behavior: 'smooth', block: 'center' });
+        document.getElementById('search-count').textContent = `${currentMatch + 1}/${searchMatches.length}`;
+      }
+
+      document.getElementById('search').addEventListener('input', runSearch);
+      document.getElementById('search').addEventListener('keydown', (event) => {
+        if (event.key === 'Enter') moveToMatch(event.shiftKey ? -1 : 1);
+      });
+      document.getElementById('previous').addEventListener('click', () => moveToMatch(-1));
+      document.getElementById('next').addEventListener('click', () => moveToMatch(1));
+
+      async function loadSource() {
+        const candidates = [config.file, REPOSITORY_RAW_BASE + config.file];
+        let lastError;
+        for (const candidate of candidates) {
+          try {
+            const response = await fetch(candidate, { cache: 'no-store' });
+            if (!response.ok) throw new Error(`HTTP ${response.status}`);
+            rawSource = await response.text();
+            renderSource();
+            buildChapters();
+            return;
+          } catch (error) {
+            lastError = error;
+          }
+        }
+        document.getElementById('status').innerHTML = `<div class="fallback"><strong>Your browser blocked local source loading</strong><p>Browsers commonly block <code>fetch()</code> from a <code>file://</code> page. Serve this folder locally, then open the viewer again:</p><code>cd "/Users/arghyaaz/Desktop/LLD_V2"<br>python3 -m http.server 8000<br><br>http://localhost:8000/parking-lot-code-viewer.html?lang=${language}</code><p>You can still <a href="${config.file}">open the raw source</a>.</p><small>${escapeHtml(String(lastError))}</small></div>`;
+      }
+
+      loadSource();
+    })();
+  </script>
+</body>
+</html>
